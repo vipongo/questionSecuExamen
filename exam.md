@@ -340,7 +340,7 @@ BELL et LA PADULA ont déﬁni un modèle comme suit :
 * *-property: ∀s ∈ S, o∈ O, a ∈ A: ( fO(o) ≥ fS(s)) ∧ (a of type « write ») ⇔ permission(s, o, a)
   Empêche que l'on puisse écrire des documents dans un niveau plus bas que le sien (write down).
 
-![image-20200613175202430](D:\Root\Ecole\BLOC 3\Secu\questionSecuExamen\bell-lapadula.png)
+![image-20200613175202430](bell-lapadula.png)
 
 Ce modèle nécessite néanmoins un mécanisme d'exceptions, pour, par exemple, envoyer de l'information aux niveaux plus bas. Les solutions trouvées sont une diminution du niveau de sécurité temporaire pour pouvoir écrire un à niveau inférieure au sien (interdit par *-property). 
 Le soucis c'est que si un sujet est dégradé à un niveau inférieur elle est sensé oublié ce qu'elle connait des niveaux inférieurs, ce qui n'est pas vraiment possible en pratique. Une autre approche est de définir un sujet de conﬁance qui peut à l'encontre des règles (ex: l'utilisateur root sur un système)
