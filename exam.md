@@ -136,27 +136,73 @@ Technique proposée par Bruce Schneier, consiste à modéliser les attaques poss
 ## Chapitre 4: Authentification  
   * Connaitre les différentes méthodes d’authentification, leurs forces et faiblesses, et pouvoir motiver le recours à l’une ou l'autre
   * Comprendre les différents modes de gestion des données relatives à l’identité numérique et en identifier les composants et leur fonction
+
   
-  
-  
+
 ## Chapitre 5: Autorisation
-  * Connaitre les différents modèles de contrôle d’accès, leurs forces et faiblesses, et pouvoir motiver le recours à l’un ou l'autre
-  * Comprendre l’intérêt d’une approche décentralisée de l’autorisation et en identifier les composants et leur fonction
+### Connaitre les différents modèles de contrôle d’accès, leurs forces et faiblesses, et pouvoir motiver le recours à l’un ou l'autre.
+
+#### DAC : Discretionary Access Model
+
+Ce modèle se base sur la propriété/titularité (ownership) des ressources, on a une matrice de permissions où chaque ligne est un sujet (personne/système), et chaque colonne une ressource. Chaque case de la matrice est un booléen qui dit si un sujet à la permission d’utiliser une ressource.
+
+* On peut avoir des groupes de sujets, et des groupes de ressources.
+* On peut utiliser des aptitudes ( "capability" ) qui sont des tokens décrivant la permission accordée à un utilisateur. Ex : token oAuth.
+* On peut utiliser une liste de contrôle d’accès (ACL) qui est une liste des permissions liées à un objet. Souvent utilisé dans les OS, serveurs LDAP, bases de données…
+* On peut transférer la propriété d’une ressource à quelqu’un d’autre.
+* Dans certains environnements on peut déléguer des droits.
+
+Ce mode de gestion des accès se base donc sur le fait que le propriétaire d’un fichier est le sujet qui a créé ce fichier, et que c’est lui qui détermine qui aura accès à son fichier. La gestion des accès est complexe avec ce système.
+
+#### MAC : Mandatory Acces Control
+
+Les permissions sont déﬁnies a priori, à la création ou à la conﬁguration du système. L'utilisateur n'a pas de contrôle sur la politique de contrôle d'accès. Le MAC contrôle le ﬂux d'information, ainsi que la conﬁdentialité et l'intégrité de l'information.
+
+Ce modèle se base sur la sécurité à multiniveaux (MultiLevel Security - MLS). Les sujets et les ressources sont étiquetées d'un niveau de sécurité. 
+
+Le principe « Need-to-know » est appliqué, c'est à dire que des sous-classes peuvent être déclarées au sein d'un niveau. Par exemple, un général militaire de la composante Terrestre ne devrait pas avoir accès aux documents Top Secrets de la composante Marine.
+
+##### Bell - La Padula Model
+
+BELL et LA PADULA ont déﬁni un modèle comme suit :
+
+* S, un ensemble de sujets.
+* O, un ensemble d'objets.
+* A, un ensemble d'opération d'accès.
+* L, un ensemble partiellement ordonné de niveau de sécurité (càd que tout les niveaux ne sont pas comparables).
+* fS: S → L, définit le niveau maximal de sécurité d'un sujet.
+* fC: S → L, déﬁnit le niveau de sécurité actuelle d'un sujet, tel que celui si n'est pas supérieure au niveau maximal du sujet ( fC(s) ≤ fS(S) ∀s)
+* fO: O → L, définit le niveau de sécurité d'un objet.deﬁnes the security level of an object
+* ss-property: ∀s ∈ S, o∈ O, a ∈ A: ( fO(o) ≤ fS(s)) ∧ (a of type « read ») ⇔permission(s, o, a)
+  Empêche que l'on puisse lire des documents de niveau de sécurité plus élevé que le sien (read up).
+* *-property: ∀s ∈ S, o∈ O, a ∈ A: ( fO(o) ≥ fS(s)) ∧ (a of type « write ») ⇔ permission(s, o, a)
+  Empêche que l'on puisse écrire des documents dans un niveau plus bas que le sien (write down).
+
+![image-20200613175202430](D:\Root\Ecole\BLOC 3\Secu\questionSecuExamen\bell-lapadula.png)
+
+Ce modèle nécessite néanmoins un mécanisme d'exceptions, pour, par exemple, envoyer de l'information aux niveaux plus bas. Les solutions trouvées sont une diminution du niveau de sécurité temporaire, et aussi la notion de sujet de conﬁance.
+Ce modèle assure la conﬁdentialité des données, mais pas leur intégrité. Il est souvent utilisé dans des contextes militaires ou des environnements où la sécurité formalisée fortement est nécessaire.
+
+##### BIBA Model
+
+
+
+#### Comprendre l’intérêt d’une approche décentralisée de l’autorisation et en identifier les composants et leur fonction
+
   
-  
-  
+
 ## Chapitre 6: Sécurité de l'infrastructure
   * Connaitre les défis pour la sécurité de l’infrastructure et les pistes de solution
   * Pouvoir proposer une solution graduelle à un risque d’indisponibilité, en veillant à articuler les différentes lignes de défense (prévention, détection, récupération) et les types de contre-mesures (techniques, organisationnelles, juridiques)
+
   
-  
-  
+
 ## Chapitre 7: Sécurité du système
   * Connaitre les défis pour la sécurité du logiciel système et les pistes de solution
   * Pouvoir proposer une solution complète à ces défis, en veillant à articuler les différentes lignes de défense (prévention, détection, récupération) et les types de contre-mesures (techniques, organisationnelles, juridiques)
+
   
-  
-  
+
 ## Chapitre 8: Sécurité logicielle
   * Connaitre les différentes étapes du cycle de vie du développement logiciel et les mesures applicables à chacune d’entre elles
   * Pouvoir compléter un cas d’utilisation (use case) par les comportements malicieux et de remédiation selon l’approche des misuse cases
