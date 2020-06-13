@@ -77,7 +77,7 @@ Technique proposée par Bruce Schneier, consiste à modéliser les attaques poss
 
 
 ## Chapitre 3 :Cryptographie
-  * **Connaitre les différentes primitives cryptographiques: chiffrement, empreinte numérique, signature numérique et certificat numérique, les objectifs de sécurité liés, les contraintes de mise en oeuvre...**  
+  #### Connaitre les différentes primitives cryptographiques: chiffrement, empreinte numérique, signature numérique et certificat numérique, les objectifs de sécurité liés, les contraintes de mise en oeuvre...  
   
   *Cryptographie:* science de la création d’algorithmes (ciphers) de (dé)chiffrement.   
   *Cryptanalyse:* science consistant à casser des algorithmes de chiffrement.   
@@ -247,7 +247,7 @@ horodatage certifié (trusted timestamping) : système permettant de garder la p
   
   
   
-  * **Pouvoir les orchestrer dans un scénario simple**  
+  #### Pouvoir les orchestrer dans un scénario simple  
   
   #### Cryptographie symétrique  
   **Distribution de clé via un tiers de confiance – algorithme de Needham-Schroeder:**  
@@ -284,8 +284,20 @@ A et B veulent communiquer ensemble. Il faut d’abord choisir deux nombres : p 
   
   
 ## Chapitre 4: Authentification  
-  * Connaitre les différentes méthodes d’authentification, leurs forces et faiblesses, et pouvoir motiver le recours à l’une ou l'autre
-  * Comprendre les différents modes de gestion des données relatives à l’identité numérique et en identifier les composants et leur fonction
+  #### Connaitre les différentes méthodes d’authentification, leurs forces et faiblesses, et pouvoir motiver le recours à l’une ou l'autre  
+  **Mot de passe basique**  
+  Il ne faut pas noter son mot de passe sur un post-it collé sur l’ordinateur (…), et il faut un mot de passe assez long, utilisant assez de caractères différents (minuscules, majuscules, chiffres et symboles spéciaux) et n’étant pas facile à deviner. Il faut changer régulièrement les mots de passe, limiter le nombre d’essais de connexion ratés (éviter le brute force), imposer un délai variable entre les essais de connexion ratés (ex : attendre 1 minute avant de réessayer, puis 2, puis 5 etc). Toujours changer les mots de passe par défaut. Ne pas changer de mot de passe avant de partir en vacances (par ex) : un mot de passe s’oublie si on ne l’utilise pas régulièrement.  
+  **Mots de passes à usage unique:** 
+  un mot de passe généré lorsque nécessaire et utilisé seulement une fois. Cela rend les attaques sur les mots de passes inutiles, il n’y a pas besoin de se souvenir du mot de passe et on pourrait les échanger en clair. Mais un tel mécanisme nécessite un état synchronisé et un secret partagé entre le client et le serveur.  
+  **Certificat:** composé d’un émetteur (issuer), d’un sujet, d’une clé publique et d’une signature. Comment authentifier : en vérifiant que le certificat est valide, et en envoyant une requête avec la cryptographie asymétrique (et vérifier que la réponse est correcte) : tester que la personne possède bien la clé privée liée au certificat.  
+  **Biométrie:** utiliser des données physiologiques ou comportementales : empreintes digitales, scan de l’iris ou rétinien, authentification par la voix, manière de taper au clavier… Le système collecte différents modèles, ensuite pour identifier quelqu’un, il faut trouver un modèle qui correspond à la personne, et ensuite pour authentifier une personne identifiée (une personne dont on a enregistré le modèle), il faut vérifier que les nouvelles données correspondent au modèle enregistré.  
+  
+  
+  
+  
+  #### Comprendre les différents modes de gestion des données relatives à l’identité numérique et en identifier les composants et leur fonction  
+  **LDAP – Lightweight Directory Access Protocol:**  défini à la fois un modèle de données et un protocole d’accès aux données. Les données sont organisées en arbre (DIT – Directory Information Tree), elles sont stockées dans des nœuds de l’arbre. La structure des nœuds est définie dans un schéma extensible, et tous les éléments de ce schéma sont identifiés par un identifiant unique. Le nœud racine est identifié par un suffixe (ex : « dc=unamur, dc=be »).  
+  **Service d’authentification externe:**  un tel service permet aux applications de ne pas se préoccuper du processus de gestion des identités et du protocole d’authentification. Il faut pour cela un protocole sécurisé, et il faut avoir confiance au service d’authentification. Il y a deux rôles dans un tel système : un fournisseur d’identité (Identity provider) et des fournisseurs de services. Ce fonctionnement permet le « single sign-on » : on se connecte une fois et on a accès à plusieurs services.(OpenId, Oauth, SAML)   
 
   
 
