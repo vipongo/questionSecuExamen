@@ -130,7 +130,157 @@ Technique proposée par Bruce Schneier, consiste à modéliser les attaques poss
     * *RC4:* Méthode de chiffrement utilisé pour la sécurité WiFi « WEP », était censée être secrète (mais s’est retrouvée sur internet), la clé est de longueur variable, et cette méthode génère des séquences aléatoires sur base de la clé, que l’on XOR avec le texte pour le chiffrer. Cette méthode utilise une boite de substitution, qui est mise à jour après chaque utilisation.
   
   ### Gestion des clés:
-  * **Pouvoir les orchestrer dans un scénario simple**
+  La gestion des clés comprend la gestion des créations, expirations, révocations, envoi et stockage des clés, ainsi que la gestion des menaces : perte, vol, compromission, extorsion… Il peut potentiellement y avoir beaucoup de clés : par exemple si on a n personnes, il faut n*(n-1)/2 clés pour que chacune puisse communiquer individuellement avec toutes les autres, et si on veut pouvoir avoir des communications de groupe, il en faudrait encore plus. Et c’est plus facile pour un attaquant de voler une clé que de casser un chiffrement.  
+  
+  **Durée de vie d’une clé:** Plus elle est utilisée, plus elle a de chance d’être compromise, plus l’impact d’une compromission sera grand (car la clé aura servi à encoder beaucoup de messages), plus elle sera intéressante pour des attaquants et plus la cryptanalyse sera facile. Il faut donc bien définir la durée de vie de chaque clé, et il faut trouver un compromis entre le coût de gestion des clés et l’impact en cas de compromission.  
+  
+  **Génération des clés:** Il faut une manière sécurisée de les générer (ne pas avoir un espace restreint par exemple), elles doivent être aléatoires, suffisamment longues et doivent être régénérée périodiquement.
+  
+  **Mise à jour des clés:** On peut par exemple calculer la clé suivante à partir de la clé actuelle (kt+1 = f(kt)) en utilisant une fonction non inversible, mais la sécurité de la nouvelle clé dépend directement de la sécurité de la précédente  
+  
+  **Destruction des clés:** Sans destruction, il sera toujours possible de l’utiliser. Il faut donc une destruction sécurisée (partout où elle a été stockée : documents, fichiers, mémoire de l’ordinateur…).  
+  
+  **Stockage des clés:** Il faut les garder en sécurité des attaquants, par exemple sur un média que l’on peut déconnecter (clé usb, baque, carte de banque).  
+  
+  **Échange de clés:** On peut utiliser une autre clé (kek – Key-Encryption Key) pour chiffrer les clés que l’on souhaite échanger (dk – Data Keys), mais il faut alors distribuer manuellement les kek avec un haut niveau de sécurité. On peut aussi découper la clé et envoyer chaque partie d’une manière différente (en espérant que l’attaquant n’a pas accès à tous les canaux utilisés). On peut enfin utiliser un centre de distribution de clés (KDC – Key Distribution Center), qui sera alors un tiers de confiance : ce tiers connaîtra toutes les clés, et est un spoc (single point of failure).
+  
+  **Partage de clés avec des tiers:** On peut simplement donner une copie de la clé à un tiers de confiance. On peut aussi découper la clé en différentes parties et donner les parties à des personnes différentes. On peut aussi utiliser un appareil de récupération de la clé, que l’on peut transmettre en cas d’absence.  
+  
+  **Propriétaire/détenteur des clés:** Il faut pouvoir être sûr qu’une clé donnée appartient bien à la personne que l’on souhaite contacter : soit en échangeant la clé en face à face, en utilisant un canal déjà sécurisé avec la personne, ou en utilisant un tiers de confiance.  
+  
+  **Compromission des clés:** Comment détecter une compromission ? On ne le détecte généralement pas tout de suite. Il faut utiliser un maximum de clés différents pour minimiser l’impact d’un vol de clé.
+  
+  ### Cryptographie asymétrique  
+  Cryptographie asymétrique (=cryptographie à clé publique) : la clé de chiffrement est différente de la clé de déchiffrement : c = E(k1, p) et p = D(k2, c). k1 et k2 sont différents mais sont mathématiquement liées. Ce qui est chiffré avec k1 ne peut être déchiffré qu’avec k2 et vice-versa. Le principe est de rendre une de ces 2 clés publique (K+ ) et de garder l’autre secrète (K- ).  
+  
+  **Principes de base:**  
+  on se base sur une fonction f à sens unique : c’est facile de calculer y = f(x) mais difficile de calculer x = f-1(y), sauf si on connaît « l’indice » (matérialisé par K- ). La fonction est difficile à inverser et il est difficile de dériver K- à partir de K+ . C’est basé sur la théorie des nombres complexes : factorisation de grands nombres, logarithmes discrets, courbes elliptiques… C’est plus pratique que la cryptographie symétrique pour la gestion des clés (on peut donner la clé publique à tout le monde, et la protection de la clé privée est de la seule responsabilité du propriétaire de la clé), mais c’est plus lent de chiffrer/déchiffrer un message.
+  
+  **Algorithme RSA:**  
+  inventé par R. Rivest, A. Shamir et L. Adleman en 1978, cette technique se base sur la factorisation de grands nombres. Génération d’une paire de clés :
+  1. choisir deux grands nombres premier aléatoires p et q, et calculer n = p*q 
+2. calculer φ(n) = (p-1)(q-1) 
+3. choisir un exposant e tel que e < n et que e et φ(n) sont premiers entre eux 
+4. calculer d tel que d*e = 1 + k* φ(n) (où k appartient aux naturels) 
+5. K + = (n, e) et K- = (n, d).  
+
+    → Généralement, p et q font chacun plus de 1000 bits. 
+    
+**Algorithme d’El Gamal:**  
+Se base sur le principe de Diffie-Hellman et sur le problème du logarithme discret : c’est facile de calculer y = ax mod n, mais difficile de trouver x
+
+### Signature numérique (digital signature)  
+Objectifs d’une signature numérique : authentification, et non répudiation. Ces signatures se basent sur la cryptographie asymétrique, et on utilise la clé privée pour signer un certificat.  
+
+**Il faut d’abord générer un « résumé » du message (« message digest »):** un hash. L’idée est de générer un résumé de longueur fixe (et petite), unique et qui a l’air aléatoire, pour n’importe quelle donnée. Il faut pour cela une fonction (de hash) qui n’est pas inversible, qui prend n’importe quel input (peu importe la longueur), qui renvoie un output de longueur fixe, qui a l’air aléatoire, qu’il ne soit pas facilement possible de trouver 2 données ayant le même hash. Et il faudrait qu’un petit changement de l’input ait un impact sur l’ensemble de l’output (du hash). Exemples :  
+•	MD2 : hash de 128 bits, obsolète, on a trouvé des faiblesses à cet algorithme et des collisions. 
+
+•	MD5 : hash de 128 bits, obsolète, plus rapide et plus résistant que MD2, on a trouvé des faiblesses, mais pas de collisions.
+
+•	SHA-1 : pour des messages de longueur inférieure à 2 ⁴ bits. Obsolète, hash de 160 bits, ⁶ possibilités). faiblesses et collisions trouvées. 
+
+•	SHA-2 et SHA-3 : résistants à la cryptanalyse.
+
+**On utilise ensuite le hash du message pour vérifier l’intégrité du message:**  
+
+•	HMAC – Hash Message Authentification Code : supposons que A et B connaissent tous les deux une clé secrète k. A calcule h = H(f(k,p)) (où H est une fonction de hachage et f une fonction qui mélange k et le message p). A envoie ensuite p et h à B. B peut lui aussi calculer H(f(k, p)), et vérifier si le résultat est bien identique au « h » qu’il a reçu.
+i.	La fonction f ne doit pas être bêtement « f(k, p) = concat(k, p) », sinon comme f est connue, cela pourrait permettre de trouver k.
+ii.	Cette méthode ne règle pas le problème de l’authentification 
+
+•	Signature numérique basée sur la cryptographie asymétrique : A calcule h = H(p), puis utilise sa clé privée pour chiffrer h : signatureA = E(KA - , h), et envoie p et signatureA à B. B peut déchiffrer signatureA à l’aide de la clé publique de A : h’ = D(KA + , signatureA), et calculer h’’ = H(p), et vérifier si h’ == h’’. Si c’est le cas, c’est que le message p n’a pas été modifié, et qu’il a bien été envoyé par A. 
+i.	Contrairement à une signature réelle (manuscrite), 2 messages signés avec la même clé auront 2 signatures différentes, et un message signé avec 2 clés différentes aura 2 signatures différentes. Il n’est donc pas possible de copier la signature d’un message pour un autre message.
+ii.	DSA – Digital Signature Algorithm : se base sur le problème des logarithmes discrets, utilise SHA-1 comme algorithme de hash. 
+
+**Exemple:**
+horodatage certifié (trusted timestamping) : système permettant de garder la preuve de l’existence d’un document et de son contenu à une date donnée, en se basant sur une autorité de certification. Fonctionnement :   
+1. Le client calcule le hash de son document (h : H(document), et l’envoie à l’autorité d’horodatage. 
+
+2. L’autorité d’horodatage mélange le hash reçu (h) au timestamp actuel (via une fonction connue), et calcul le hash de ce mélange (h2 = H(h, timestamp)). L’autorité va ensuite chiffrer ce hash à l’aide de sa clé privée : cert = E(Kautorité, h2), et renvoyer « cert » et le timestamp au client. 
+
+3. Si on possède le document, le certificat et le timestamp, on sait vérifier que le certificat est valide (et que le document donné correspond bien au document lié au certificat) : on calcule le hash du document, on le mélange au timestamp, on hash le résultat, et on vérifie que ce hash correspond bien à celui stocké dans le certificat en déchiffrant le certificat avec la clé publique de l’autorité de certification (K+ autorité) 
+
+### Infrastructure de clés publiques   
+
+  Certificats numériques : se basent sur la cryptographie asymétrique et permettent d’établir une relation vérifiable (prouvable) entre une clé publique et l’identité de son propriétaire (une personne ou un système). 
+  
+  **Certificat X.509:**  
+  Un certificat numérique. Il est fournit par un tiers de confiance : une autorité de certification. Cette autorité signe numériquement le certificat, pour l’authentifier. Le certificat identifie le sujet (une personne/un système) et l’émetteur en utilisant une notation précise. Le certificat possède également une date de début et de fin de validité.  
+  Il y a eu plusieurs évolutions des certificats X.509 (v1, v2, v3). Un certificat contient les informations suivantes : la version du certificat, un numéro de série, le nom de l’algorithme de signature, le nom de l’émetteur, la période de validité, le nom du sujet, la clé publique du sujet, l’identifiant unique de l’émetteur, l’identifiant unique du sujet, la signature du certificat, et des extensions (identifiant de la clé de l’autorité, contraintes basiques, contraintes de noms, etc).  
+  Pour pouvoir valider la signature d’un certificat, il faut la clé publique de l’émetteur de ce certificat. L’émetteur (une autorité de certification) auto-signe son certificat (il le signe avec sa propre clé privée). Attention qu’un certificat n’authentifie pas son porteur : il faut d’abord vérifier que le sujet connaît la clé privée correspondant à la clé publique qui se trouve dans le certificat (on peut faire cela en envoyant une information chiffrée avec la clé publique du sujet, et en demandant au sujet de renvoyer cette information déchiffrée).  
+  
+  La gestion des certificats est réalisée par un ensemble d’entités qui forment **une PKI – Public Key Infrastructure. Une PKI est composée** :  
+  * D’une autorité de certification – CA : elle authentifie les sujets, crée, gère et révoque les certificats (CSR – Certificate Signing Request), elle rend sa propre clé publique disponible (via un certificat, signé avec sa propre clé privée). En pratique, elle utilise une chaîne de certificats (un certificat principal auto-signé – certificat racine, et des certificats intermédiaires signés avec la clé privée liée au certificat principal). 
+  * D’une autorité d’enregistrement – RA : elle travaille avec l’autorité de certification, elle reçoit et valide les informations des sujets, elle génère des clés pour les utilisateurs lorsque c’est nécessaire, distribue les périphériques de stockage de clés, elle gère et autorise les requêtes de stockage et de récupérations de clés, ainsi que les requêtes de révocations de certificat. Il y a plusieurs RA pour une CA. 
+  * D’un annuaire/répertoire de certificats
+  * D’un serveur de récupération de clés : il permet d’éviter qu’il y ai trop de création et de distribution de clés et de certificats lorsqu’il y a une perte.  
+  
+  **Révocation de certificat:** Cela peut être nécessaire si on perd sa clé privée ou si elle est compromise, s’il y a des données fausses dans le certificat, si l’autorité de certification fait une erreur, si le sujet du certificat n’existe plus (si c’était un système par exemple). L’autorité de certification maintient une: 
+  
+  **CRL – Certificate Revocation List**:  
+  un fichier qui contient la liste des certificats révoqués que cette autorité avait signé. Cette liste est mise à jour régulièrement (même s’il n’y a pas de changement), pour garantir que l’information est à jour. Mais cela nécessite que le client vérifie lui-même cette liste, via le protocole OCSP (Online Certificate Status Protocol). La CA peut rendre cette liste disponible via différents endroits s’il s’agit d’une grande CA (pour éviter une surcharge).  
+  * Il y a aussi moyen que le serveur fasse lui-même la requête vers la CA pour éviter au client de le faire, via l’agrafage OCSP (OCSP Stapling) : le serveur fournit au client, en même temps que la réponse à la requête du client, une réponse OCSP horodatée et signée par la CA (réponse à une requête que le serveur a fait très récemment). 
+  
+  Validation d’un certificat lorsque l’on se connecte à un site web : il faut vérifier que le sujet du certificat correspond bien au site auquel on essaie d’accéder, que le certificat n’a pas expiré, qu’il est conforme à l’utilisation (=valider l’identité du sujet), qu’il a bien été signé avec la clé de l’émetteur, et qu’il n’a pas été révoqué. → pour vérifier la signature du certificat, il faut la clé publique de l’émetteur du certificat (soit le serveur renvoie ce certificat, soit le client doit le récupérer lui-même).  
+  
+  **3 classes de certificats:**  
+  * *classe 1* (simple vérification : email ou nom de domaine),  
+  * *classe 2* (vérification à distance de l’identité du sujet, ex : photocopie de la carte d’identité demandé),   
+  * *classe 3* (vérification en face à face de l’identité du sujet), certificat qualifié (certificat émis par une autorité qualifiée, c’est-à-dire une autorité qui se confirme aux exigences de régulation).  
+  
+  #### ANSSI recommendation  
+  * Clé symétrique : 100b (< 2020) 128b (>2020)  
+  * Block cipher : 64b (< 2020) 128b (>2020)  
+  * Algorithms : DES, 3DES : KO, AES : OK   
+  * Factorisation (RSA)
+    * Size of n : 2048b (<2020), 4096b (> 2020)
+    * Secret exponent : same as n
+    * Public exponent e : > 2^16
+* Digest: 
+    * Digest size : 200b (<2020)
+    * SHA-1 : NOK; SHA-256: OK  
+
+#### Application:  
+**Découper un secret en plusieurs parties:** si une personne (T) veut partager un secret p entre A, B, C et D pour qu’à 4 ils puissent connaître le secret, mais pas seuls : T génère 3 chaîne aléatoires R1, R2 et R3, calcule U = p XOR R1 XOR R2 XOR R3, puis donne R1 à A, R2 à B, R3 à C et U à D. Si A, B, C et D rassemblent leur partie, ils peuvent reconstruire p. Si une des 4 personnes perd sa partie, ils ne savent plus reconstituer p (sauf si T a gardé p).
+
+  
+  
+  
+  
+  
+  * **Pouvoir les orchestrer dans un scénario simple**  
+  
+  #### Cryptographie symétrique  
+  **Distribution de clé via un tiers de confiance – algorithme de Needham-Schroeder:**  
+  Alice veut communiquer avec Bob, et Trent est un tiers de confiance. KAT est la clé partagée entre Alice et Trent, et KBT la clé partagée entre Bob et Trent. k est la clé permettant à Alice et Bob de communiquer, et r a et rb sont des nombres aléatoires (nonce). E représente la fonction de chiffrement, le premier paramètre étant la clé.  
+  
+![](nnedham.png)
+a.	Alice envoie « Alice », « Bob » et « ra » à Trent 
+
+b.	Trent renvoie les 4 informations suivantes chiffrées avec KAT : « ra », « Bob », « k » et « E(kBT, (A, k)) ». 
+i.	Alice sait que le message vient bien de Trent (car il est chiffré avec KAT). 
+
+c.	Alice déchiffre les 4 informations et envoie « E(kBT, (A, k)) » à Bob. 
+i.	Bob sait que le message vient d’Alice et qu’Alice est bien qui elle prétend être.
+
+d.	Bob déchiffre ce message, il renvoie ensuite le message suivant à Alice, chiffré avec k : « rb ». 
+i.	Alice sait que le message vient bien de Bob, car il a réussi à déchiffrer le message chiffré avec kBT. 
+
+e.	Alice déchiffre le message, et renvoie le message suivant à Bob, chiffré avec k : « rb - 1 »
+
+  **Distribution de clé via un tiers de confiance – algorithme de Otway-Rees:**  
+  
+  
+![](Otway.png)
+#### Cryptographie asymétrique
+**Exemple – principe de Diffie-Hellman:**  
+A et B veulent communiquer ensemble. Il faut d’abord choisir deux nombres : p (un grand nombre premier) et g (un « générateur pour le groupe cyclique fini G = Z/p2 »), et p et g sont publics. Ensuite, A choisit un très grand nombre « a » et calcule « g a mod p », et B choisit un très grand nombre « b » et calcule « g b mod p ». Ensuite, A envoie « g a mod p » à B, qui peut alors calculer k = (ga mod p)b mod p . Et B envoie « g b mod p » à A, qui peut alors calculer k = (gb mod p)a mod p. « k » ( =gab mod p) est uniquement connu de A et de B !  
+
+* Si quelqu’un écoute les communications entre A et B, il connaît alors « g a mod p » et « g b mod p ». pour connaître k = gab mod p, il faut que cette personne connaisse a (ou b) à partir de ga mod p : c’est le problème du logarithme discret, qui n’a pas de solution simple ! 
+* Mais cette technique est vulnérable à l’attaque man-in-the-middle (A ne sait pas vérifier l’identité de B et vice-versa)
+
+  
+  
+  
   
   
 ## Chapitre 4: Authentification  
