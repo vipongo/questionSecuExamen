@@ -63,7 +63,7 @@ Nombreuses méthodes déjà existantes (Octave, CRAMM, EBIOS, Mehari)
 **8.Monitoring/surveillance des risques:** surveiller les risques et leurs facteurs pour identifier des changements dans le contexte de l’entreprise et pouvoir donner une réponse à ces changements.  
 
 
-  
+
 ### Les moyens de mesurer le risque et ses composantes, les options de traitement du risques, les lignes de défense (prévention, détection, récupération)
 
 
@@ -85,50 +85,50 @@ Technique proposée par Bruce Schneier, consiste à modéliser les attaques poss
 
   **Chiffrement de César:**  
   Décaler les lettres du message original (ex : A devient D, B devient E, etc). On peut généraliser cette technique en substituant chaque lettre par une autre (ex : A devient D, B devient A, etc). Mais ces deux techniques sont faciles à casser, par exemple en analysant la fréquence de chaque lettre (en français, la lettre E apparaît plus souvent, et donc la lettre qui remplace la lettre E sera probablement celle qui apparaît le plus souvent dans le message codé).
-  
+
   **Chiffrement de Vigenère:**  
   Substitution polyalphabétique : une même lettre du message clair peut, suivant sa position dans le message, être remplacée par des lettres différentes (contrairement au chiffrement de César par exemple). La i-ème lettre du message chiffré est égale à la i-ème lettre du message en clair avec un décalage de : la i-ème lettre de la clé répétée ( ex : keykeykeyke…) modulo 26.
-  
+
   **Pourquoi ne pas uniquement utiliser un algorithme (au lieu d’utilisé une clé secrète en plus)?**
   C’est plus difficile de garder un algorithme secret, une fois qu’il est connu il devient inutilisable, il faut faire confiance au créateur de l’algorithme. Alors qu’il est plus facile de garder une clé secrète, que si l’algorithme est public, il peut être validé par de nombreux experts, on peut même utiliser plusieurs clés.
-  
+
   * *Principe de Kerckhoff* : un système cryptographique doit être sécurisé même si l’ensemble du système est connu, mis à part la clé privée.
-  
+
   **Différente classes d'attaques**  
   Attaques passives (espionnage, pas d’interaction entre l’attaquant et les parties qui communiquent, attaque difficile à détecter), actives (usurpation d’identité (id spoofing), modification de la communication (ajout, modification ou suppression de paquets)… Ex : man in the middle), attaque par rejeu (renvoyé un message émit précédemment), attaque par canal auxiliaire (attaque basée sur de l’information provenant de l’implémentation physique du mécanisme cryptographique, plutôt que via sa cryptanalyse. Ex : se baser sur la consommation énergétique ou les émissions électromagnétiques de l’algorithme), attaque liée au timing (déterminer des informations sur le processus cryptographique sur base du temps qu’il prend).  
-  
+
   *On peut attaquer la clé:* à voir en fonction de la taille de la clé (40 bits → 10¹², 56 bits → 64*10¹⁵, mais il y a des clés de 128, 256, 4096 bits!), on peut faire du brute force (en moyenne, on essaie la moitié des possibilités → ajouter un bit à la clé double le temps nécessaire pour un brute force), ou une attaque par dictionnaire (se baser sur une liste de valeurs probables).  
-  
+
   *On peut attaquer l’algorithme:* l’objectif est alors de trouver la clé plus rapidement que via un brute force. Différents types d’attaques, en fonction de ce que l’on sait connaître : soit on a uniquement accès à un texte chiffré, soit on a accès à des paires de textes chiffrés et déchiffrés, soit on peut obtenir le texte chiffré correspondant à n’importe quel texte déchiffré, soit on peut connaître le texte déchiffré correspondant à n’importe quel texte chiffré (en connaissant la clé).
-  
+
   **Un bon algorithme de chiffrement** ne doit pas permettre à un attaquant de trouver la clé, ne doit pas permettre à un attaquant de récupérer tout ou une partie du texte en clair, ni aucune propriété du texte en clair (ex : sa longueur précise). Formellement : la probabilité de trouver le texte en clair en connaissant le texte chiffré doit être égale à la probabilité de trouver le texte en clair sans connaître ce texte chiffré.  
-  
+
   *Les nombres aléatoires* sont la base de nombreux mécanismes de cryptographie : génération de clés, de nonces (nonce : nombre arbitraire destiné à être utilisé une seule fois)… Il faut donc disposer d’un générateur de nombres pseudo-aléatoires (PRNG), se basant sur une graine (seed) réellement aléatoire. Pour obtenir cette graine, on peut se baser sur des phénomènes matériels (bruit thermique des résistances, turbulences d’air dans le disque dur…) ou sur du logiciel (horloge, mouvements de la souris, paramètres du système d’exploitation…). Un générateur de nombres pseudo-aléatoires se base sur un algorithme déterministe, il génère une séquence de nombres qui ont l’air aléatoires sur base d’une graine réellement aléatoire.
-  
+
   ### Cryptographie symétrique  
   **ECB** – Electronic CodeBook Mode : simplement les juxtaposer. En faisant cela, les blocs identiques seront chiffrés de la même manière et on les remarque facilement.  
   **CBC** – Cipher Block Chaining : pour chaque bloc à chiffrer, on fait un XOR avec le texte chiffré du bloc précédent avant de réaliser le chiffrement du bloc (et pour le premier bloc on fait le XOR avec une constante que l’on transmet en clair avec le message).  
   **CFB** – Cipher FeedBack Mode : pour chaque bloc à chiffrer, on fait un XOR avec Ek(bloc chiffré précédent), et on obtient directement le bloc chiffré.  
   **CTR** – Counter Mode : pour chiffrer un bloc, on fait un XOR avec Ek(nonce || x), où x est le numéro du bloc à chiffrer, et nonce un nombre aléatoire.
   * Cette technique permet la parallélisation (on peut chiffrer plusieurs blocs en même temps car un bloc ne dépend pas du précédent) et permet de déchiffrer seulement une partie du message (car les blocs sont indépendants).  
-  
+
   **Padding** : si la taille des données n’est pas un multiple de la taille d’un bloc, comment compléter les données pour que le destinataire sache à partir de quand ce ne sont plus des données dans le message en clair : on peut par exemple compter le nombre de bytes qu’il faut rajouter, et écrire cette valeur de manière répétée sur ces bytes à compléter. Le destinataire n’a qu’à lire le dernier byte, il obtient le nombre de bytes qu’il doit supprimer du message. 
-  
+
   ### Methodes de chiffrement:
-  
+
   * **Méthode de chiffrement – bloc à usage unique:**  
-  Cette méthode est basée sur l’utilisation unique d’un flux aléatoire de données (k) faisant la même taille que les données à chiffrer. Chiffrement : c = p XOR k, et déchiffrement : p = c XOR k. Malheureusement la gestion des clés est alors complexe (il faut changer la clé à chaque fois et elles sont grandes), cette méthode n’est donc pas utilisable en pratique  
+    Cette méthode est basée sur l’utilisation unique d’un flux aléatoire de données (k) faisant la même taille que les données à chiffrer. Chiffrement : c = p XOR k, et déchiffrement : p = c XOR k. Malheureusement la gestion des clés est alors complexe (il faut changer la clé à chaque fois et elles sont grandes), cette méthode n’est donc pas utilisable en pratique  
   
   * **Méthode de chiffrement – chiffrement de flux:**
-  Cette méthode est inspirée de la précédente (bloc à usage unique), on a un générateur de nombres aléatoires qui génère une séquence de bits, et le chiffrement/déchiffrement fonctionne un bit à la fois : c = p XOR pad, p = c XOR pad. Il faut que le générateur soit cryptographiquement sécurisé et correctement initialisé.  
+    Cette méthode est inspirée de la précédente (bloc à usage unique), on a un générateur de nombres aléatoires qui génère une séquence de bits, et le chiffrement/déchiffrement fonctionne un bit à la fois : c = p XOR pad, p = c XOR pad. Il faut que le générateur soit cryptographiquement sécurisé et correctement initialisé.  
   
   * **Méthode de chiffrement – DES – Digital Encryption Standard:**
-  utilise une clé de 56 bits, un chiffrement par blocs de 64 bits, utilise la même fonction pour chiffrer et déchiffrer. L’objectif de cette méthode est que chaque bit du texte chiffré dépende de chaque bit du texte clair et de la clé, et soit aussi rapide que possible. L’algorithme effectue 16 tours (round), en utilisant des clés dérivées de la clé principale (via des permutations et compressions). L’algorithme est plutôt lent, et n’est plus sécurisé (crackable très rapidement).  
+    utilise une clé de 56 bits, un chiffrement par blocs de 64 bits, utilise la même fonction pour chiffrer et déchiffrer. L’objectif de cette méthode est que chaque bit du texte chiffré dépende de chaque bit du texte clair et de la clé, et soit aussi rapide que possible. L’algorithme effectue 16 tours (round), en utilisant des clés dérivées de la clé principale (via des permutations et compressions). L’algorithme est plutôt lent, et n’est plus sécurisé (crackable très rapidement).  
   
     * *Triple DES:* Effectuer le chiffrement DES 3 fois, avec 3 clés différentes (donc 168 bits au total). C’est donc 3 fois plus lent que DES.
     * *AES – Advanced Encryption Standard:*: Chiffrement par blocs de 128 bits, avec des clés de 128, 192 ou 256 bits.
     * *RC4:* Méthode de chiffrement utilisé pour la sécurité WiFi « WEP », était censée être secrète (mais s’est retrouvée sur internet), la clé est de longueur variable, et cette méthode génère des séquences aléatoires sur base de la clé, que l’on XOR avec le texte pour le chiffrer. Cette méthode utilise une boite de substitution, qui est mise à jour après chaque utilisation.
-  
+
   ### Gestion des clés:
   La gestion des clés comprend la gestion des créations, expirations, révocations, envoi et stockage des clés, ainsi que la gestion des menaces : perte, vol, compromission, extorsion… Il peut potentiellement y avoir beaucoup de clés : par exemple si on a n personnes, il faut n*(n-1)/2 clés pour que chacune puisse communiquer individuellement avec toutes les autres, et si on veut pouvoir avoir des communications de groupe, il en faudrait encore plus. Et c’est plus facile pour un attaquant de voler une clé que de casser un chiffrement.  
   
@@ -342,12 +342,14 @@ BELL et LA PADULA ont déﬁni un modèle comme suit :
 
 ![image-20200613175202430](D:\Root\Ecole\BLOC 3\Secu\questionSecuExamen\bell-lapadula.png)
 
-Ce modèle nécessite néanmoins un mécanisme d'exceptions, pour, par exemple, envoyer de l'information aux niveaux plus bas. Les solutions trouvées sont une diminution du niveau de sécurité temporaire, et aussi la notion de sujet de conﬁance.
-Ce modèle assure la conﬁdentialité des données, mais pas leur intégrité. Il est souvent utilisé dans des contextes militaires ou des environnements où la sécurité formalisée fortement est nécessaire.
+Ce modèle nécessite néanmoins un mécanisme d'exceptions, pour, par exemple, envoyer de l'information aux niveaux plus bas. Les solutions trouvées sont une diminution du niveau de sécurité temporaire pour pouvoir écrire un à niveau inférieure au sien (interdit par *-property). 
+Le soucis c'est que si un sujet est dégradé à un niveau inférieur elle est sensé oublié ce qu'elle connait des niveaux inférieurs, ce qui n'est pas vraiment possible en pratique. Une autre approche est de définir un sujet de conﬁance qui peut à l'encontre des règles (ex: l'utilisateur root sur un système)
+Ce modèle assure la conﬁdentialité des données, mais pas leur intégrité.
+Il est souvent utilisé dans des contextes militaires ou des environnements où la sécurité formalisée fortement est nécessaire.
 
 ##### BIBA Model
 
-
+Ce modèle inverse les caractéristiques de BELL et LA PADULA : l'intégrité est garantie, tandis que la conﬁdentialité pas. L'intégrité est garantie par le principe de « no write up » et de « no read down ».
 
 #### Comprendre l’intérêt d’une approche décentralisée de l’autorisation et en identifier les composants et leur fonction
 
