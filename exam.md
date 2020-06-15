@@ -465,10 +465,101 @@ En cas de sous-traitance pour la redondance des sites, il faut faire attention a
 
 
 
-## Chapitre 7: Sécurité du système
-  * Connaitre les défis pour la sécurité du logiciel système et les pistes de solution
-  * Pouvoir proposer une solution complète à ces défis, en veillant à articuler les différentes lignes de défense (prévention, détection, récupération) et les types de contre-mesures (techniques, organisationnelles, juridiques)
+## Chapitre 7: Sécurité du système  
+  * **Connaitre les défis pour la sécurité du logiciel système et les pistes de solution**  
+  
+ ### Missions de l’OS:  
+ gérer les ressources (cpu, mémoire, périphériques) en les allouant, partageant et en contrôlant les accès, fournir une couche d’abstraction (interface stable et simple, indépendante du hardware), et c’est la dernière ligne de défense entre un attaquant et un système.
+ * *Processus*: partie dynamique du système, il exécute du code qu’il lit depuis un fichier, accède à des ressources (cpu, mémoire, fichiers…), et s’exécute au nom d’un utilisateur (il hérite des privilèges de cet utilisateur).   
+ * *Utilisateur*: possède un compte sur la machine, appartient à des groupes, possède un ensemble de permissions. Il y a des utilisateurs normaux, des admins, et des comptes spéciaux.  
+ * *Organisation du stockage*: : mémoire non volatile, organisation hiérarchique (fichiers et dossiers), les fichiers sont organisés en un système de fichiers (fat, ntfs, ext4…) qui ajoute des fonctionnalités (liens, chiffrement, journalisation), définit des métadonnées (nom de fichier, date de création/modification, permissions, checksum…), définit l’organisation de l’espace disponible (inodes), définit des limites (taille maximale d’un fichier, taille d’un volume, contraintes sur le nom des fichiers…). Cette organisation peut avoir un gros impact sur la sécurité d’un système.
+  
+  
+  * **Pouvoir proposer une solution complète à ces défis, en veillant à articuler les différentes lignes de défense (prévention, détection, récupération) et les types de contre-mesures (techniques, organisationnelles, juridiques)**  
+  
+  ### Menaces et contre-mesures  
+  Il y a beaucoup de menaces potentielles : bombe logique (morceau de code malicieux dans un système qui se déclenche à un moment donné ou si une condition est respectée), backdoor (point d’entrée caché vers un système), usurpation de connexion, augmentation/escalade des privilèges…  
+  **Login spoofing** : fausse interface de login  
+  **Backdoor** : faire un accès avec un identifiant reconnu  
+  **Excalation de privilège** : mécanisme pour avoir plus de privilège que l’on a accès  
+  **Logic Bomb** : programme malicieux qui démarre à un moment donné (par exemple un employé viré)  
+  
+  **Attaque DoS – Denial of Service** : consister à « innonder » un système de requêtes :  
+  * **UDP Flood** : envoyer plein de datagrammes UDP vers la victime, sur différents ports. Et on met une fausse adresse ip source pour éviter de se faire détecter. 
+  * **ICMP Flood** : idem UDP Flood, mais avec des requêtes ICMP 
+  * **TCP SYN Flood** : on commence plein initialisations TCP (handshake) sans la terminer, ce qui fait que le système victime va réserver plein de ressources pour ces requêtes. 
+  * **TCP RST** : envoyer des requêtes RST pour fermer des connexions ouvertes (mais pour cela, il faut connaître les numéros de séquence). 
+  * **Sockstress** : envoyer une requête indiquant que la « window size » vaut 0 (ce qui va bloquer les transmissions futures jusqu’à ce que cette taille change à nouveau). 
+  * HTTP flood, DNS flood…   
+  * **Attaque DoS par réflexion** : type d’attaque DoS, où on utilise un système tiers pour attaquer, pour masquer l’identité de l’attaquant. 
+  * **Attaque DoS amplifiée**: faire en sorte que le volume de données reçues par la victime soit plus important que le volume de données envoyé par l’attaquant. Ex :
+    * DNS Amplification attack : envoyer des requêtes DNS à des serveurs DNS qui renvoient de grosses réponses, en utilisant l’adresse ip de la victime dans ces requêtes (pour que ce soit la victime qui reçoive les réponses).   
+    * Smurf Attack : envoyer des requêtes ICMP vers des adresses broadcast, en utilisant l’adresse ip de la victime.  
+    
+**Malware** : terme générique qui couvre un grand nombre de menaces différentes. Aujourd’hui, les attaques sont de plus en plus complexes, et peuvent être développées par des organisations criminelles, des gouvernements, des entreprises, etc. Effets des attaques : chantage, relai de spams, attaques ddos via les infrastructures de la victime, vol de données et d’identité, stockage et partage de fichiers illégaux, propagation de logiciels malveillants, faire transiter (via les infrastructures de la victime) des communications malveillantes, manipulation de sondages, craquage de mots de passes…  
+→ Pertes de données, indisponibilité du système, pertes financières… et cela prend du temps de réparer le système.  
 
+Un malware se propage en exploitant des vulnérabilités. « Exploit zero-day » : utiliser une vulnérabilité qui n’as pas encore été corrigée (et qui n’est pas forcément connue du public/du propriétaire du logiciel). → Il y a un marché des vulnérabilités (illégal : achat d’exploit zero-day ; légal : les entreprises offrent souvent des récompenses aux personnes qui signalent des failles de sécurité).
+
+* **Trojan – cheval de Troie** : un programme contenant des fonctionnalités cachées (généralement malveillantes). Il se propage en se téléchargeant et copiant sur d’autres ordinateurs. Il est exécuté par l’utilisateur, qui pense qu’il s’agit d’un programme normal.
+* **Virus** : programme qui se réplique en insérant des copies de lui-même dans d’autres programmes. Il doit être exécuté une première fois. 2 phases : insertion, et exécution. Un virus peut cibler différents composants : secteur boot du disque dur, exécutables binaires… Un virus peut être résident (il est présent dans la mémoire RAM de l’ordinateur, et reste actif en permanence) ou non résident (il s’exécute uniquement quand d’autres programmes se lancent). Les virus sont chiffrés, et modifient leur propre code, pour essayer de ne pas être détectés par les antivirus (→ il faut donc une fonction de déchiffrement et décodage).
+* **Ver** : programme qui se propage via le réseau. Ex : « Internet Worm », un ver de 1988 qui se propageait de 3 manières différentes (exploitation d’un buffer overflow, bug de sendmail…).
+* **Logiciel espion (spyware)** : logiciel caché, qui collecte des données (surveillances, données utilisées pour faire du marketing, etc), les envoie vers un serveur externe, et résiste aux tentatives de suppression. Il se propage via des téléchargements infectés ou des barres d’outils de navigateur infectées. Il affiche par exemple des pubs, fait apparaître des fenêtres popup, modifie ce qu’affiche le navigateur, etc.
+* **Rootkit** : programmes et fichiers cachés dans les basses couches du système (OS, et plus bas que l’OS), très résistants à la détection, qui modifient le système en profondeur. Le but est de surveiller/contrôler une machine. Ces programmes ont différentes cibles : bibliothèque (il se cache dans une bibliothèque, ex : libc), noyau (se fait passer pour un composant de l’OS), ou hyperviseur (le programme modifie la séquence de boot pour installer un hyperviseur, qui va lancer ensuite l’OS).
+    * Méthodes de détection de rootkit : démarrer le système depuis un disque externe, surveiller le comportement du système et les performances, surveiller certains logs spécifiques…
+    
+### Comment se protéger des malwares : 
+équivalent du jeu du chat et de la souris… On crée des systèmes de détection, et de nouveaux malwares apparaissent, qui arrivent à contourner les systèmes de détection.
+1.	Prévention : sélectionner un OS sécurisé et le rendre plus sécurisé (bien le configurer), vérifier les origines et l’intégrité des logiciels et données, filtrer les pièces jointes d’emails, bloquer les périphériques amovibles (usb, cd…), appliquer une bonne isolation du système et des processus, utiliser du contrôle d’accès et des privilèges… -> FORMATION
+2.	Détection : utiliser un logiciel anti-malware réputé, et le maintenir à jour, surveiller le système pour détecter des changements inattendus de comportement.
+3.	Récupérer : faire des backup régulièrement (avoir plusieurs versions, et plusieurs copies/supports différents).
+
+### Gestion de l’OS et Backup
+
+**Quels mécanismes de protection** mettre en place au niveau de l’OS : mécanismes d’authentification, contrôle d’accès aux ressources de l’OS, fonctions cryptographiques, audit des activités du système (audit trail), firewall, système de détection d’intrusions (IDS), anti-malware, scanners de vulnérabilités.
+
+#### Gestion des ressources :  
+* **Principe d’isolation** : gestion et protection plus simple des ressources, possibilité de configurer les privilèges de manière très précise, limiter l’impact d’un problème potentiel à une seule partie du système. Utiliser des environnements différents pour le développement, le test, la production. Et définir des procédures de migration du système.  Ex : chroot, sandbox, docker, virtualisation…
+* **Gestion des utilisateurs** : c’est la base du contrôle d’accès et de la surveillance/audit. Il faut suivre le principe du minimum de privilèges (ne pas en donner plus que nécessaire) : environnement sandbox, restrictions d’accès (heure, origine de la requête), mots de passe, date de validité d’un compte… Éviter les comptes partagés (plusieurs personnes qui accèdent au même compte), plutôt utiliser l’augmentation/délégation de privilèges (ex : sudo).
+* **Gestion des ressources** : contrôler la quantité de ressources utilisées par utilisateur/par processus (CPU, espace mémoire RAM, espace disque, bande passante…).
+* **Gestion du stockage** : sélectionner un système de fichier approprié, avec des volumes de la bonne taille (éviter de risquer d’avoir un volume plein), contrôle d’accès (fichier : exécutable?)
+* **Sécurité du réseau** : firewall local, le configurer avec des règles sur mesure, qui dépendent des exigences réelles. Et favoriser les connexions chiffrées (ex : ssh). 
+
+#### Gestion de l’OS :
+
+* **Installation et configuration – configuration initiale** : partitionnement du disque, configuration du réseau, mots de passes par défaut et politiques, installer uniquement ce qui est nécessaire (pour minimiser la maintenance et les risques)
+* **Maintenance** : patch, mises à jour, mises à jour majeures (de l’OS entier).
+* **Documentation** : pour préserver la connaissance, pouvoir reconstruire le système facilement en cas de soucis. → Formation !  
+
+**Patch et mises à jour:** pour corriger les vulnérabilités au plus vite. Il faut tester les patch avant de les appliquer (pour être sûr qu’ils fonctionnent bien correctement), définir une procédure de patch (manuelle ou automatique?). Pour les mises à jour majeures de l’OS : automatiques, ou on installe manuellement la nouvelle version ?   
+
+**OS Hardening (renforcement)** : limiter les attaques possibles en limitant la quantité de vulnérabilités : fermer les portes non utiles (ports réseau par ex), supprimer/désactiver les services et applications non utilisés, configurer le firewall en fonction de l’utilisation de la machine, installer des anti-malware et lancer une analyse complète du système, vérifier la liste des utilisateurs, vérifier les permissions des fichiers, utiliser des canaux de communication chiffrés… 
+
+#### Définir un plan de backup : 
+* **quoi** (que faut-il sauvegarder ? système, données, logiciels, logs…)
+* **comment** (dump du système de fichiers et des bases de données, synchronisation de fichiers, outil dédié…)
+* **quand** (fréquence, combien de temps garder les données → limiter l’impact sur le système), infrastructure spécifique (stockage, réseau). 
+* **Règle 3-2-1** : avoir au total 3 copies des données, 2 sont locales mais sur des médias différents (périphérique différent), et au moins une copie est sur un autre site (assez éloigné).
+
+**Sécurité des backups** : protéger l’accès aux médias et appareils, stocker de manière sécurisée, chiffrer les données, LOCKSS : lots of copies keep stuff sage, vérifier que les backups fonctionnent bien régulièrement.
+
+### Monitoring/surveillance   
+La détection d’attaques et de malware est très importante, et donc la surveillance du système aussi (pour pouvoir répondre rapidement). On peut surveiller la disponibilité, les performances… Il existe de nombreux outils (surveillance locale : audit du système ; gestion du réseau et des configurations ; produits opensource ou commerciaux). Paramétrer ces outils peut prendre beaucoup de temps.  
+
+**Gestion des événements:** pouvoir enregistrer (log) l’ensemble des événements du système (et donc des différents services qui tournent) → collecter, stocker, analyser et corréler les événements pertinents provenant de tous les composants de l’infrastructure.  
+**Systèmes de détection d’intrusions (IDS – Intrusion Detection System)** : détecter les événements qui pourraient révéler une intrusion (la prévention n’est pas suffisante, il faut aussi pouvoir détecter !). 3 fonctions pour ces systèmes : récolter et enregistrer les données (capteurs distribués partout, sondes placées aux bons endroits), analyser les données (normaliser les données et les analyser), et détecter les intrusions (et alerter). Deux approches :  
+* **Détection d’abus** : basé sur la connaissance et la détection de signatures : on se base sur les caractéristiques des attaques (activité du système, trafic réseau, messages de log), connaissant les caractéristiques de nombreuses attaques différentes (base de données de signatures, approches les plus courantes…)
+* **Détection d’anomalies** : basé sur le comportement, s’appuie sur une base de référence : une alerte est générée dans le cas où le comportement mesuré du système s’éloigne trop du comportement habituel (comportement de référence). Cette méthode est capable de détecter de nouvelles attaques. Mais de nouveaux comportements peuvent être détectés (à tort) comme étant des attaques. Ce n’est pas facile de définir correctement un comportement « normal ». 
+
+**IDS** : host-based (se base sur des informations locales au système) ou network-based (se base sur l’analyse du trafic réseau). 
+**→ Fiabilité (des IDS)** : les faux positifs peuvent être coûteux (en temps) et impactent la confiance que l’on a du système. Les faux négatifs sont de réels problèmes également (on ne détecte pas un problème).  
+→ Il faut donc bien configurer ces outils pour avoir le minimum de faux positifs et de faux négatifs.  
+
+**→ Limitations (des IDS)** : les attaques sont souvent ciblées à un système spécifique (et donc adaptées à ce système), les bases de données de signatures évoluent sans cesse, le trafic est souvent chiffré ou fragmenté (plus difficile à analyser), et il y a souvent beaucoup à analyser (ce qui peut diminuer les performances du système)
+
+**SNORT** : un exemple d’IDS, basé sur les signatures. OSSEC : un exemple d’IDS, host-based. Il peut par exemple automatiquement adapter les règles d’un firewall, désactiver des comptes utilisateurs, mettre des fichiers en quarantaine. Il est extensible et adaptable, possède une interface web, peut envoyer des alertes (email, sms), et possède de nombreuses fonctionnalités.
+**Contrôle/vérification de vulnérabilités** : mesure proactive (vérifier s’il y a des vulnérabilités). Il existe de nombreux outils automatisés permettant d’identifier et rapporter des vulnérabilités. Ils vérifient beaucoup de choses : découverte d’atouts, scan de vulnérabilités, mauvaises configurations, failles d’applications, malware, identification d’informations sensibles… 
+* Outils : nmap (découverte réseau, audit de sécurité, administration), nessus (scan d’OS, d’appareils sur le réseau, firewall, hyperviseur, bases de données, serveurs web), openVAS (scanner de vulnérabilités open source), metasploit (framework de pentest complet), LSAT (linux security audting tool)…
 
 
 ## Chapitre 8: Sécurité logicielle
