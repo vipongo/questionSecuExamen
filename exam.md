@@ -401,16 +401,75 @@ cette réponse au PEP.
 11. Le PEP rempli ses obligations.
 
 ## Chapitre 6: Sécurité de l'infrastructure
-  * Connaitre les défis pour la sécurité de l’infrastructure et les pistes de solution
-  * Pouvoir proposer une solution graduelle à un risque d’indisponibilité, en veillant à articuler les différentes lignes de défense (prévention, détection, récupération) et les types de contre-mesures (techniques, organisationnelles, juridiques)
-
+  * **Connaitre les défis pour la sécurité de l’infrastructure et les pistes de solution**  
+  Pas la confidentialité ni l’intégrité (qui sont plutôt des problématiques de plus haut niveau), mais plutôt la disponibilité : il faut que l’entreprise puisse continuer à tourner, et comme l’entreprise dépend de ses infrastructures, celles-ci doivent rester disponibles. Il faut éviter des pannes d’infrastructures inattendues : utilise du matériel fiable, maintenable (on peut mettre à jour le firmware facilement, remplacer un composant facilement, etc), utiliser de la détection et correction d’erreurs, et permettre une reconfiguration automatique de l’infrastructure en cas de problème.  
+  **Solution?**  
+  * Redondance des composants
+  * Redondance du système 
+  * Robustesse : ne pas rendre les choses trop complexes : garder le système aussi simple que possible. Il faut minimiser la probabilité de défaillance, et garder le système gérable (bien le connaître). 
+  * Sécurité réseau, hébergement 
+  * Redondance des sites (lieux), monitoring et contrat  
   
+  * **Pouvoir proposer une solution graduelle à un risque d’indisponibilité, en veillant à articuler les différentes lignes de défense (prévention, détection, récupération) et les types de contre-mesures (techniques, organisationnelles, juridiques)**
+    ### Redondance des composants :  
+
+**Défaillances** : il y en a différents types : des défaillances qui surviennent au début (défauts de fabrication par ex), à la fin de la vie du produit (quand il devient trop vieux, s’use), et les autres (qui peuvent survenir à tout moment). On constate donc plus de défaillance au début et à la fin de la vie des produits, qu’au milieu.
+
+**Redondance CPU** : on peut avoir plusieurs CPU, que l’on peut remplacer pendant que le système tourne.
+**Redondance mémoire** : mécanismes de détection et correction d’erreur  
+**Redondance I/O** : avoir plusieurs interfaces, permettant une plus grande bande passante → En cas de défaillance, le transfert se fera avec une moins grande bande passante.
+Câblage : rester organisé (bonne longueur, les nommer (étiquettes) et bien les placer).
+Redondance des sources d’alimentation : avoir des sources alternatives ! Surtout pour gérer des pannes temporaires de courant (et pouvoir éteindre le système correctement en cas de prolongation de panne).  
+**Interventions (de réparation) sur le hardware** : délicat ! Il faut faire fort attention, il faut de l’expérience et les bons outils pour éviter de perturber le matériel sensible.
+Redondance des supports de stockage de données : RAID – Redundant Array of Inexpensive Disks : on définit des volumes logiques virtuels (répliqués) au-dessus de disques physiques. Cela utilise différents mécanismes : mirorring (une donnée se trouve sur plusieurs disques durs), striping (découper une grosse donnée en plusieurs parties et stocker chaque partie sur un disque différent, pour accélérer la récupération de cette donnée) et contrôle de parité.  
+* **RAID 0** : du striping, mais pas de redondance. RAID 0 permet de créer des volumes (virtuels) plus gros que la taille d’un seul disque dur. 
+* **RAID 1** : redondance des données ! On a 2 disques qui sont identiques (un des disques est une copie de l’autre).
+* **RAID 5** : striping, contrôle de parité : on a n disques durs, et l’équivalent d’un disque des dur contient les bits de parité (ex : on fait un XOR entre le premier bit de chacun des disques durs, et on stocke le résultat dans le dernier disque. Si un des disques tombe en panne, on sait recalculer son contenu).  
+* **RAID 6** : identique à RAID 5, mais fonctionne aussi si 2 disques durs tombent en panne.  
+
+**→ Contrôleur RAID** : pour contrôler l’accès aux données (les applications utilisant le disque dur ne savent pas qu’un système RAID est mis en place et ne doivent pas s’en préoccuper). Le contrôleur peut être logiciel ou matériel.   
+**Unité de stockage** : système de stockage spécialisé, composé de disques durs mais aussi de CPU et de RAM. Un tel système permet des fonctionnalités plus avancées (ex : faire un snapshot d’un disque : sauvegarder l’état d’un disque dur à un moment donné).
+
+  ### Redondance du système 
+  
+  **Virtualisation** : concept assez ancien (et toujours très utilisé!) : partager une ressource physique parmi plusieurs clients, en créant des ressources virtuelles au-dessus de cette ressource physique. Ex :
+mémoire virtuelle, volumes logiques (stockage de données), VLAN (réseau virtuel), timesharing (partage d’un processeur parmi plusieurs clients)…   
+**Clusters de machines** : On peut utiliser des clusters de serveurs et de la virtualisation : le service tourne sur une machine virtuelle liée à un cluster de machines physiques. Si une des machines tombe en panne, les autres peuvent prendre le relai (soit le service était assigné à une machine, et on lui assigne une autre machine, soit il y avait déjà du load balancing et il suffit de rediriger les requêtes vers des machines fonctionnelles). Les machines d’un cluster peuvent avoir un état partagé.  
+
+**Load-balancing** : utile pour les services stateless (les requêtes sont auto-contenues, le serveur n’a pas besoin d’informations supplémentaires provenant de requêtes précédentes pour pouvoir répondre à la requête) tels que des serveurs web, DNS, LDAP… Le principe : on a un ensemble de serveurs, et on répartit la charge (les requêtes) parmi ces différents serveurs. Il faut un algorithme qui choisit vers quel serveur envoyer une requête (soit simplement un serveur à la fois, soit un algorithme plus complexe).
+  
+  ### Sécurité réseau, hébergement :  
+  
+  **Disponibilité du réseau** : redondance ! Avoir plusieurs cartes réseau, plusieurs fournisseurs, plusieurs canaux de connexion.  
+**Contrôle d’accès** : le réseau donne accès aux serveurs et à l’organisation entière, il faut le protéger : firewall : filtrage de paquets, inspection des paquets (stateful!), firewall applicatifs, contrôle des appareils connecté…   
+**Isolation du réseau** : consiste à découper le réseau interne en plusieurs sous-réseaux isolés, et avoir des zones déconnectées d’internet et des accès extérieurs (DMZ – demilitarized zones), des réseaux internes (LAN) et externes (WAN, lié à internet). Il faut gérer les transmissions de données entre le LAN et le WAN, le WAN et le DMZ et entre le LAN et le DMZ, en utilisant différents firewalls.  
+**Confidentialité, intégrité** : il faut utiliser des canaux chiffrés (pas forcément toujours sur la même couche réseau) : PGP (emails), DNSSEC, SSL/TLS, IPSec, VPN (tunnel sécurisé entre un ordinateur et le réseau d’une organisation).   
+**CASB – Cloud Access Security Broker** : fournis un point de contrôle cohérent et pratique sur les activités et données des utilisateurs au sein d’un réseau complexe (nombreux services et applications basées sur le cloud).   
+
+
+**Hébergement – datacenter** : service d’hébergement complet, offrant de nombreux services (contrôle d’accès, câblage, bâtiment sur mesure). Il faut bien évidemment que ce datacenter soit correnctement ventilé, correctement fourni en électricité et ayant des procédure de gestion de services à grande échelle
+
+### Redondance des sites (lieux), monitoring et contrat
+  **RPO** – Recovery Point Objective : délai entre le moment où on a sauvegardé les données pour la dernière fois, et le moment d’un incident.  
+**RTO** – Recovery Time Objective : délai entre le moment où il y a un incident, et celui où le système redevient fonctionnel du point de vue des utilisateurs.
+
+**Récupération après un désastre – approche générale** : définition des objectifs et du périmètre de la procédure, identification des systèmes, définition de paramètres (RTO, RPO), des équipes et des responsabilités de chacun, concevoir un plan haut niveau (les principes), puis un plan plus technique, implémenter la solution, élaborer des procédures, former les gens à appliquer ces procédures, et les tester régulièrement ! Puis évaluer et améliorer l’ensemble des solutions et procédures.   
+→ Les sites (lieux) de backup peuvent appartenir à l’entreprise, mais on peut aussi imaginer louer un lieu de backup à un partenaire, ou simplement outsourcer. Où placer le lieu de sauvegarde : pas trop près (pour éviter que les 2 subissent le même incident), et pas trop loin (délais de communication).  
+
+**Type de synchronisation** : soit le site de sauvegarde est une copie exacte du site principal, soit le site de sauvegarde ne peut pas remplacer le site principal mais permet de restaurer le site principal. On peut aussi avoir une approche hybride : en temps normal, on fait fonctionner les 2 sites (principal et secondaire), et si un des 2 tombe en panne, l’autre sait prendre le relai.  
+Si le site de backup est éloigné du site principal, il y a différentes techniques de synchronisation : mirorring asynchyrone, envoi de logs (liste des actions effectuées sur une donnée par exemple), synchronisation de fichiers (rsync), etc.  
+
+**Le monitoring (surveillance) et la mise en place d’alertes** sont également importants ! Si quelque chose se passe mal, il faut en être informé rapidement. Il faut réfléchir ce qu’il faut surveiller, comment mettre en place la surveillance sans ralentir le système (en diminuant les performances…), essayer d’éviter les faux négatifs et faux positifs. Alertes : email, sms, équipe de support…   
+En cas de sous-traitance pour la redondance des sites, il faut faire attention au fournisseur que l’on choisit : il doit avoir une ligne de produits flexibles, modulaires et à jour, on doit pouvoir aller voir sur place, il doit déjà avoir des partenaires, etc. Et il faut écrire un SLA – Service Level Agreement : un document qui définit la qualité de service du fournisseur (disponibilité, distinguer les défaillances graves et légères, définir les responsabilités, la communication, etc). 
+
+
+
 
 ## Chapitre 7: Sécurité du système
   * Connaitre les défis pour la sécurité du logiciel système et les pistes de solution
   * Pouvoir proposer une solution complète à ces défis, en veillant à articuler les différentes lignes de défense (prévention, détection, récupération) et les types de contre-mesures (techniques, organisationnelles, juridiques)
 
-  
+
 
 ## Chapitre 8: Sécurité logicielle
   * Connaitre les différentes étapes du cycle de vie du développement logiciel et les mesures applicables à chacune d’entre elles
