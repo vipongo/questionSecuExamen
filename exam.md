@@ -563,7 +563,35 @@ La détection d’attaques et de malware est très importante, et donc la survei
 
 
 ## Chapitre 8: Sécurité logicielle
-  * Connaitre les différentes étapes du cycle de vie du développement logiciel et les mesures applicables à chacune d’entre elles
-  * Pouvoir compléter un cas d’utilisation (use case) par les comportements malicieux et de remédiation selon l’approche des misuse cases
-  * Connaitre les grands types de vulnérabilités logicielles et les pistes de remédiation
-  * Pouvoir identifier et décrire de manière technique et détaillée les vulnérabilités logicielles qui ont été présentées ainsi que les contre-mesures appropriées
+#### Connaitre les différentes étapes du cycle de vie du développement logiciel et les mesures applicables à chacune d’entre elles.
+
+
+
+Pouvoir compléter un cas d’utilisation (use case) par les comportements malicieux et de remédiation selon l’approche des misuse cases
+
+#### Connaitre les grands types de vulnérabilités logicielles et les pistes de remédiation
+
+##### Buffer Overflow : 
+
+Lorsque l’on reçoit un input d’un utilisateur, on peut par exemple le stocker dans un tableau (une variable). Mais si la taille du tableau est fixe (c’est le cas en C par exemple), que l’utilisateur envoie trop de données par rapport à la taille du tableau, et que l’on ne vérifie pas qu’il n’y a pas trop de données (certaines fonctions d’input en C ne vérifient pas cela), un buffer overflow est possible. Par exemple : on crée un tableau de 20 caractères, puis on appelle la fonction C « gets », avec en paramètre l’adresse du tableau (c’est-à-dire l’adresse du premier élément!). gets récupère des caractères entrés par l’utilisateur et les stocke dans la mémoire, à partir de l’adresse
+reçue. gets ne connaît donc pas la taille du tableau, et si trop de caractères sont entrés par l’utilisateur, gets continuera d’écrire dans la mémoire (en écrasant d’autres variables, par exemple!).
+
+* Si juste à côté du tableau, dans la mémoire, il y a une variable qui contient les permissions de l’utilisateur, un buffer overflow pourrait permettre à l’utilisateur de modifier cette variable et donc ses permissions au sein du programme !
+* Si juste à côté du tableau, il y avait du code, c’est très risqué (on pourrait remplacer une instruction par une autre)… Mais généralement le code et les données ne sont pas complètement mélangés dans la mémoire RAM.
+* Si juste à côté du tableau, il y avait une adresse mémoire (ex : l’adresse de la prochaine instruction à exécuter, ou l’adresse de retour d’une fonction), on peut imaginer la modifier (via le buffer overflow) pour exécuter un autre code (qui peut être malveillant).
+  * Pour tout ça, il faut essayer de deviner ce qui est stocké juste à côté du tableau dans la mémoire, ce qui n’est pas toujours évident. Et si on veut modifier une adresse mémoire par une autre, il faut pouvoir connaître la bonne adresse (surtout si elle est relative).
+
+##### Bug de formatage de chaînes de caractères
+
+Dans des langages comme le C, le formatage de chaînes de caractères est utilisé dans de nombreuses fonctions (ex : printf("%0.2f", value); → le premier paramètre décrit le format, et les paramètres suivants sont des variables contenant les valeurs à utiliser).
+Ces fonctions peuvent poser problème lorsque l’utilisateur peut manipuler le premier caractère : que se passe-t-il s’il la chaîne est vide ? Que se passe-t-il s’il n’y a pas de variable en 2ᵉ paramètre mais qu’on en utilise quand même une dans le format ? Ex : la chaîne « %n » doit être liée à un pointeur vers un entier, et le nombre de caractères imprimés sera écrit à cette adresse-là.
+
+* Risques : révélation d’informations confidentielles (stockées dans la RAM), modification du flux d’exécution (modifier l’adresse de retour RET) et injection de code !
+  * Pour éviter une modification de l’adresse de retour : on ajoute un marqueur (ensemble de bits) entre les variables et RET (dans la mémoire), marqueur contenant une valeur aléatoire que l’on enregistre ailleurs également. Et avant d’utiliser RET, on vérifie si le marqueur a été modifié. Si oui, RET l’a été aussi, et on bloque l’exécution.
+  * Au lieu d’injecter du code, on peut également utiliser du code existant (de librairies par exemple).
+    → Protection de la mémoire : rendre le stack et le heap non exécutables.
+    → Pour éviter les buffer overflow, on peut également utiliser la technique ASLR – Address Space Layout Randomization : l’idée est de  placer les bibliothèques et autres éléments (ex : le stack) à des adresses qui changent aléatoirement entre chaque exécution du programme. Cette technique est implémentée dans les OS modernes. Ne s’applique pas pour les exécutables compilés.
+
+
+
+#### Pouvoir identifier et décrire de manière technique et détaillée les vulnérabilités logicielles qui ont été présentées ainsi que les contre-mesures appropriées
